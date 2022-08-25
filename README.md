@@ -10,29 +10,29 @@ This repo currently only contains code for profile based detection. For tweet ba
 Currently this is a just notebooks that can be replicated. I can create a importable module if this gets enough interest.
 
 
-#Environment Setup(Windows)
+# Environment Setup(Windows)
 
-#Install Python
+# Install Python
 
-#Install Java
+# Install Java
 
-#Install PySpark
+# Install PySpark
 
-#Install Jupyter Notebook
+# Install Jupyter Notebook
 
-##For Distributed Implementation(On AWS)
-#Create AWS Account
+## For Distributed Implementation(On AWS)
+# Create AWS Account
 
-#Install PuTTY 
+# Install PuTTY 
 
-#AWS Authentication
+# AWS Authentication
 
-#Create AWS EMR cluster
+# Create AWS EMR cluster
 
-#Create AWS S3 Bucket
+# Create AWS S3 Bucket
 
-#Upload Dataset in S3
+# Upload Dataset in S3
 
-#Upload Project in Cluster EC2 Master Node
+# Upload Project in Cluster EC2 Master Node
 
-#Run project on Cluster EC2 Master Node
+# Run project on Cluster EC2 Master Node
