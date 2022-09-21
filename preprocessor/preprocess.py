@@ -36,24 +36,24 @@ class Preprocess:
         return tweet_string
 
     def preprocess_urls(self, tweet_string, repl):
-        return Patterns.URL_PATTERN.sub(repl, tweet_string)
+        return Patterns.URL_PATTERN.sub(str(repl), str(tweet_string))
 
     def preprocess_hashtags(self, tweet_string, repl):
-        return Patterns.HASHTAG_PATTERN.sub(repl, tweet_string)
+        return Patterns.HASHTAG_PATTERN.sub(str(repl), str(tweet_string))
 
     def preprocess_mentions(self, tweet_string, repl):
-        return Patterns.MENTION_PATTERN.sub(repl, tweet_string)
+        return Patterns.MENTION_PATTERN.sub(str(repl), str(tweet_string))
 
     def preprocess_reserved_words(self, tweet_string, repl):
-        return Patterns.RESERVED_WORDS_PATTERN.sub(repl, tweet_string)
+        return Patterns.RESERVED_WORDS_PATTERN.sub(str(repl), str(tweet_string))
 
     def preprocess_emojis(self, tweet_string, repl):
         if not Defines.IS_PYTHON3:
             tweet_string = tweet_string.decode('utf-8')
-        return Patterns.EMOJIS_PATTERN.sub(repl, tweet_string)
+        return Patterns.EMOJIS_PATTERN.sub(str(repl), str(tweet_string))
 
     def preprocess_smileys(self, tweet_string, repl):
-        return Patterns.SMILEYS_PATTERN.sub(repl, tweet_string)
+        return Patterns.SMILEYS_PATTERN.sub(str(repl), str(tweet_string))
 
     def preprocess_numbers(self, tweet_string, repl):
         return re.sub(Patterns.NUMBERS_PATTERN, lambda m: m.groups()[0] + repl, tweet_string)
