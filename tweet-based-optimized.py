@@ -49,7 +49,7 @@ GENUINE_COLUMNS = ['id','text','source','user_id','truncated','in_reply_to_statu
 COLUMN_NAMES = ['text', 'retweet_count', 'reply_count', 'favorite_count',
                 'num_hashtags', 'num_urls', 'num_mentions']
 
-
+'''
 #configure spark
 conf = SparkConf()
 conf.setMaster("local[8]").setAppName("ml_account_ base_session")
@@ -57,7 +57,7 @@ conf.set("spark.executor.instances", 4)
 conf.set("spark.executor.cores", 4)
 # conf.set("spark.driver.memory", 8g)
 sc = SparkContext(conf=conf)
-
+'''
 # init spark, configure spark
 spark = SparkSession.builder.getOrCreate()
 spark
@@ -67,31 +67,31 @@ def read_dataset():
     bot_tweets = spark.read.csv(bot_tweets_dataset_path, header = True, inferSchema = True)
     genuine_tweets = spark.read.csv(genuine_tweets_dataset_path, header = True, inferSchema = True)
     
-    print(len(bot_tweets.collect()), len(genuine_tweets.collect()))
+#     print(len(bot_tweets.collect()), len(genuine_tweets.collect()))
     return bot_tweets, genuine_tweets
 
 def set_column_name(df, column_names):
     df = df.toDF(*column_names)
-    print(len(df.collect()))
+#     print(len(df.collect()))
     return df
 
 def remove_column_miss_match(df):
     ## dataset have diffrent number of columns
     ## column name of dataframe
     column_name = [cname for cname, tp in df.dtypes]
-    len(df.collect()), len(df.dtypes)
+#     len(df.collect()), len(df.dtypes)
     #column_name
 
     #Number of column is diffrent for bot and genuine tweets data
 
     #genuine_tweets_df = genuine_tweets_df.toDF(*column_name)
     df = set_column_name(df, GENUINE_COLUMNS)
-    print(len(df.collect()))
+#     print(len(df.collect()))
     
     df = df.drop('REMOVE_IT') # remove 5th column from end
     #update column name according to 
     df = set_column_name(df, BOT_COLUMNS)
-    print(len(df.collect()))
+#     print(len(df.collect()))
     return df
 
 
@@ -108,7 +108,7 @@ def resize_combine_data(bot_tweets_df, genuine_tweets_df):
     bot_tweets_df = bot_tweets_df.select(*COLUMN_NAMES)
     genuine_tweets_df = genuine_tweets_df.select(*COLUMN_NAMES)
     
-    print(len(bot_tweets_df.collect()), len(genuine_tweets_df.collect()))
+#     print(len(bot_tweets_df.collect()), len(genuine_tweets_df.collect()))
 
     ## add BotOrNot column
     bot_tweets_df = bot_tweets_df.withColumn('BotOrNot', lit(1))
@@ -120,7 +120,7 @@ def resize_combine_data(bot_tweets_df, genuine_tweets_df):
     # shuffle dataset
     tweets_df = tweets_df.orderBy(rand())
 
-    print(len(tweets_df.collect()))
+#     print(len(tweets_df.collect()))
     
     return tweets_df
 
@@ -236,7 +236,7 @@ def sentEmbeddingGLoVE_LSTM(df):
     text_updated_column = 'text_features'
     updated_df = processTextColumn(df, "text", text_updated_column)
 
-    print(len(updated_df.collect()), type(updated_df), updated_df.printSchema()) 
+#     print(len(updated_df.collect()), type(updated_df), updated_df.printSchema()) 
     
     return updated_df
 
@@ -254,7 +254,7 @@ def assembleColumns(tweets_df):
                           tweets_df.text_features[20], tweets_df.text_features[21], tweets_df.text_features[22],tweets_df.text_features[23], tweets_df.text_features[24])
 
 
-    print(tweets_df.columns, len(tweets_df.collect()), tweets_df.printSchema())
+#     print(tweets_df.columns, len(tweets_df.collect()), tweets_df.printSchema())
 
     #remove 
 
@@ -273,7 +273,7 @@ def assembleColumns(tweets_df):
 
     #check
     num = len(tweets_updated_df.collect())
-    print(num, type(tweets_updated_df), tweets_updated_df.printSchema())
+#     print(num, type(tweets_updated_df), tweets_updated_df.printSchema())
 
     #remove unnecessary columns
     tweets_updated_df = tweets_updated_df.drop(*feature_columns)
@@ -283,14 +283,13 @@ def assembleColumns(tweets_df):
 
 def to_nparray_list(df, column_name):
     rows = df.select(column_name).collect()
-    lists = [x[column_name] for x in rows]
-    nparr = np.array(lists)
+    nparr = np.array(rows)
     
     return nparr
 
 def partition_dataset(df):
     train_df, test_df = df.randomSplit([0.80, 0.20])
-    print(len(train_df.collect()), len(test_df.collect()))
+#     print(len(train_df.collect()), len(test_df.collect()))
 
     # features --> 'BotOrNot'
     X_train = train_df.drop('BotOrNot')
@@ -299,14 +298,19 @@ def partition_dataset(df):
     y_test = test_df.select('BotOrNot')
 
     #checkpoint
-    print(len(X_train.collect()), len(y_train.collect()))
-    print(len(X_test.collect()), len(y_test.collect()))
+#     print(len(X_train.collect()), len(y_train.collect()))
+#     print(len(X_test.collect()), len(y_test.collect()))
+
+#     X_train = to_nparray_list(X_train, 'independent_features')
+#     y_train = to_nparray_list(y_train, 'BotOrNot')
+#     X_test = to_nparray_list(X_test, 'independent_features')
+#     y_test = to_nparray_list(y_test, 'BotOrNot')
 
 
-    X_train = to_nparray_list(X_train, 'independent_features')
-    y_train = to_nparray_list(y_train, 'BotOrNot')
-    X_test = to_nparray_list(X_test, 'independent_features')
-    y_test = to_nparray_list(y_test, 'BotOrNot')
+    X_train = np.array(X_train.select('independent_features').collect())
+    y_train = np.array(y_train.select('BotOrNot').collect())
+    X_test = np.array(X_test.select('independent_features').collect())
+    y_test = np.array(y_test.select('BotOrNot').collect())
     
     return X_train, y_train, X_test, y_test # return type: numpy.array
 
@@ -353,14 +357,14 @@ def worker_task(bot_tweets_df, genuine_tweets_df):
     bot_tweets_df = remove_type_miss_match(bot_tweets_df)
     genuine_tweets_df = remove_type_miss_match(genuine_tweets_df)
     
-    print(len(bot_tweets_df.collect()), len(genuine_tweets_df.collect()))
+#     print(len(bot_tweets_df.collect()), len(genuine_tweets_df.collect()))
     
     ##preprocess data
     tweets_df = resize_combine_data(bot_tweets_df, genuine_tweets_df)
     tweets_df = preprocess_data(tweets_df)
     
-    print(len(tweets_df.collect()))
-    print(tweets_df.columns)
+#     print(len(tweets_df.collect()))
+#     print(tweets_df.columns)
     
     ##text embedding using GLoVE & LSTM
     ## Word Embedding
@@ -368,7 +372,7 @@ def worker_task(bot_tweets_df, genuine_tweets_df):
     
     ## Assable multiple colu,ms to create feature vector
     tweets_updated_df = assembleColumns(tweets_df)
-    print(len(tweets_updated_df.collect()), tweets_updated_df.columns)
+#     print(len(tweets_updated_df.collect()), tweets_updated_df.columns)
     
     ##Create Dense Model
     
@@ -388,7 +392,7 @@ def worker_task(bot_tweets_df, genuine_tweets_df):
 if __name__ == '__main__':
     ##load dara
     bot_tweets_df, genuine_tweets_df = read_dataset()
-    print(bot_tweets_df.count(), genuine_tweets_df.count())
+#     print(bot_tweets_df.count(), genuine_tweets_df.count())
     
     ## single worker or multiple worker
     worker_task(bot_tweets_df, genuine_tweets_df)
